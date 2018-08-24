@@ -25,13 +25,14 @@ The <code>readme.md</code> description <strong>does not</strong> reflect the act
 <h1 id="main-description">Description</h1>
 <p>
   <code>tablio</code> is a html
-  <code>&lt;table&gt;</code> generator, that creates the table based on the given contents data. You can:</p>
+  <code>&lt;table&gt;</code> generator, that creates the table based on the given [Array:Object] <strong>contents data</strong>. You can:</p>
 <ul>
   <li>set the columns order</li>
   <li>set the pagination and how many rows should be displayed on one page</li>
   <li>add the search input for each column</li>
   <li>sort columns</li>
   <li>control the table behaviour with js methods</li>
+  <li>modify <em>(update)</em> the given <strong>contents data</strong> object by editing cells' contents
   <li>see the
     <a href="https://devrafalko.github.io/tablio/sample-1.html">Sample 1</a>,
     <a href="https://devrafalko.github.io/tablio/sample-2.html">Sample 2</a>,
@@ -108,10 +109,10 @@ const table = new Tablio({
   pageTiles: 5,
   header: true,
   columns: [
-    { id: "ordinal", ordinal: true, header: 'Ind.', content: (index) => `${index}.`, start: 1, step: 1, fixed: true },
-    { id: "names", name: 'name', header: 'Name:', content: (value) => value, search: true, sortable: true },
-    { id: "age", name: 'age', header: 'Age:', content: (value) => value, sortable: true },
-    { id: "income", name: 'income', header: 'Income:', content: (value) => `${value}$`, sortable: true, editable: true }
+    { id: 'ordinal', ordinal: true, header: 'Ind.', content: (index) => `${index}.`, start: 1, step: 1, fixed: true },
+    { id: 'names', name: 'name', header: 'Name:', content: (value) => value, search: true, sortable: true },
+    { id: 'age', name: 'age', header: 'Age:', content: (value) => value, sortable: true },
+    { id: 'income', name: 'income', header: 'Income:', content: (value) => `${value}$`, sortable: true, editable: true }
   ],
   ready: (table, elements) => {
     elements.table.id = 'income-table';
@@ -192,10 +193,10 @@ const table = new Tablio({
 
 ```javascript
 const data = [
-  { id: 178, calories: 28, name:'beetroot', category:'vegetable', vegan:true },
-  { id: 194, calories: 95, name:'banana', category:'fruit', vegan:true },
-  { id: 263, calories: 61, name:'goat’s milk cheese', category:'dairy', vegan:false },
-  { id: 1731, calories: 549, name:'chocolate', category:'sweets', vegan:false },
+  { db_id: 178, calories: 28, name:'beetroot', category:'vegetable', vegan:true },
+  { db_id: 194, calories: 95, name:'banana', category:'fruit', vegan:true },
+  { db_id: 263, calories: 61, name:'goat’s milk cheese', category:'dairy', vegan:false },
+  { db_id: 1731, calories: 549, name:'chocolate', category:'sweets', vegan:false },
 ];
 ```
 
@@ -250,9 +251,8 @@ const data = [
   <li>if the <code>header</code> is omitted, the <strong>default</strong> <code>true</code> value is used</li>
 </ul>
 
-<h3 id="config-columns"><code>columns</code> <em>(optional)</em></h3>
-<strong>Type:</strong> [ Array:Object | undefined ]<br/>
-<strong>Default:</strong> <code>[]</code><br/>
+<h3 id="config-columns"><code>columns</code></h3>
+<strong>Type:</strong> [ Array:Object ]<br/>
 <strong>Description:</strong>
 <ul>
   <li>this property lets to determine the columns of the new table</li>
@@ -295,14 +295,15 @@ const data = [
     </ol>
   </li>
   <li> the final <strong>columns order</strong> of the table corresponds with the [Array] <code>columns</code> <strong>items order</strong> </li>
+  <li>at least <strong>one</strong> [Object] <strong>column</strong> item must be added to the [Array] <code>columns</code></li>
 </ul>
 
 ```javascript
 columns: [
   { id: "ordinal", ordinal: true, header: 'Ind.', content: (index) => `${index}.`, start: 1, step: 1, fixed: true },
   { id: "names", name: 'name', header: 'Name:', content: (value) => value, search: true, sortable: true },
-  { id: "age", name: 'age', header: 'Age:', content: (value) => value, sortable: true },
-  { id: "income", name: 'income', header: 'Income:', content: (value) => `${value}$`, sortable: true, editable: true }
+  { id: "age", name: 'age', header: 'Age:', content: (value) => value, sortable:'string' },
+  { id: "income", name: 'income', header: 'Income:', content: (value) => `${value}$`, sortable:'number' editable: true }
 ],
 ```
 
@@ -347,7 +348,11 @@ columns: [
 
 <h4 id="config-column-content">column <code>content</code> <em>(optional)</em></h4>
 <strong>Type:</strong> [ Function | String | HTMLElement | undefined ]<br/>
-<strong>Default:</strong> <code>({ value }) => value</code><br/>
+<strong>Default:</strong>
+<p>
+  For <a href="#ordinal-column">ordinal column</a>: <code>({ ordinal }) => ordinal</code><br/>
+  For <a href="#content-column">content column</a>: <code>({ value }) => value</code>
+</p>
 <strong>Description:</strong>
 <p>
   It indicates the final <strong>content</strong> of the cells in the column.<br/>
@@ -409,12 +414,17 @@ This <strong>DOM node</strong> is appended to <strong>each</strong> cell of the 
 
 <h4 id="config-column-header">column <code>header</code> <em>(optional)</em></h4>
 <strong>Type:</strong> [ String | undefined ]<br/>
-<strong>Default:</strong><br/>
-<p>
-  If the <a href="#config-column-ordinal"><code>ordinal</code></a> property is set to <code>true</code>, the [String] <code>"ind."</code> value is used as the <code>header</code> by default.<br/>
-  If the <a href="#config-column-name"><code>name</code></a> property is defined, this [String] value is used as the <code>header</code> by default.<br/>
-  Otherwise the empty string <code>""</code> is used as the <code>header</code>.
-</p>
+<strong>Default:</strong>
+<ul>
+  <li>For <a href="#ordinal-column">ordinal column</a>: [String] <code>"ind."</code> value<br/></li>
+  <li>For <a href="#content-column">content column</a>:
+    <ul>
+      <li>if the <a href="#config-column-name"><code>name</code></a> property is defined: the <code>name</code> [String] value</li>
+      <li>otherwise: empty string <code>""</code></li>
+    </ul>
+  </li>
+</ul>
+
 <strong>Description:</strong>
 <ul>
   <li>it indicates the [String] content of the <code>&lt;th&gt;</code> cell in the header row of the column</li>
@@ -442,7 +452,7 @@ This <strong>DOM node</strong> is appended to <strong>each</strong> cell of the 
   <li> it coheres with <a href="#config-column-ordinal"><code>ordinal</code></a> property set to <code>true</code> <em>(the <a href="#ordinal-column">ordinal number column</a>)</em>, otherwise the <code>step</code> property is ignored</li>
   <li> it indicates the <strong>step value</strong> of the sequential row in the ordinal number column</li>
   <li> it can indicate positive and negative integers and decimals</li>
-  <li> it cannot be a <code>NaN</code>, <code>Infinity</code> or <code>-Infinity</code></li>
+  <li> it cannot be equal to <code>0</code>, a <code>NaN</code>, <code>Infinity</code> or <code>-Infinity</code></li>
   <li> if the <code>step</code> is omitted, the <strong>default</strong> <code>1</code> value is used</li>
   <li> eg. if the <code>step</code> is defined with <code>0.1</code> and the <code>start</code> is defined with <code>0.1</code>, the cells with the following contents will be generated in the ordinal number column: <code>0.1</code>, <code>0.2</code>, <code>0.3</code>, <code>0.4</code>, etc.</li>
 </ul>
@@ -477,33 +487,73 @@ This <strong>DOM node</strong> is appended to <strong>each</strong> cell of the 
 
 
 <h4 id="config-column-sortable">column <code>sortable</code> <em>(optional)</em></h4>
-<strong>Type:</strong> [ Boolean | undefined ]<br/>
-<strong>Default:</strong> <code>true</code><br/>
+<strong>Type:</strong> [ Boolean | String | undefined ]<br/>
+<strong>Default:</strong>
+<p>
+  For <a href="#ordinal-column">ordinal column</a>, the [String] <code>"number"</code> value is used as the <code>sortable</code> by default.<br/>
+  For <a href="#content-column">content column</a>, the [String] <code>"string"</code> value is used as the <code>sortable</code> by default.
+</p>
 <strong>Description:</strong>
 <ul>
   <li>the table is generated with some additional HTML elements to control the table behaviour</li>
-  <li>the <code>sortable</code> property set to <code>true</code> indicates, that the HTML <strong>sorting button</strong> element should be generated along with the table for this column</li>
   <li>HTML <strong>sorting button</strong> lets the user to <strong>sort</strong> <em>(toggle ascending and descending order)</em> the table according to this column's cells' values.</li>
+  <li>there are <strong>two types</strong> of HTML <strong>sorting button</strong> to choose for the column:
+    <ul>
+      <li>alphabetical sorting order <code>[A-Z]</code> <strong>button</strong>: set <strong>column</strong> <code>sortable</code> to [String] <code>"string"</code></li>
+      <li>numerical sorting order <code>[0-9]</code> <strong>button</strong>: set <strong>column</strong> <code>sortable</code> to [String] <code>"number"</code> value</li>
+    </ul>
+  </li>
+  <li>the <code>sortable</code> property set to [String] <code>"string"</code> or <code>"number"</code> indicates, that the chosen HTML <strong>sorting button</strong> element should be generated along with the table for this column</li>
+  <li>the <code>sortable</code> property set to <code>false</code> indicates, that the HTML <strong>sorting button</strong> element will not be appended to the table</li>
   <li>in order to determine, which values should be considered during sorting the table rows, define the <a href="config-column-match"><code>match</code></a> property</li>
-  <li>if the <code>sortable</code> is omitted, the <strong>default</strong> <code>true</code> value is used</li>
+  <li>neither <code>"string"</code> nor <code>"number"</code> affects the way of sorting the rows - it indicates the <strong>sorting button type</strong> only <em>(see how <a href="#sorting-algorithm">sorting algorithm</a> works below)</em></li>
+  <li>if the <code>sortable</code> is omitted or set to [Boolean] <code>true</code>, the <strong>default</strong> value is used</li>
   <li>
     <strong>mind</strong> that it coheres with the <a href="#content-column"><strong>content column</strong></a> and with the <a href="#config-column-fixed"><strong>non-fixed</strong></a> <a href="#ordinal-column"><strong>ordinal column</strong></a> only<br/>
     <em>(if the <a href="#config-column-ordinal"><code>ordinal</code></a> and <a href="#config-column-fixed"><code>fixed</code></a> properties are set to <code>true</code>, the <code>sortable</code> property is ignored)</em>
   </li>
 </ul>
+<h5 id="sorting-algorithm">sorting algorithm</h5>
+<ul>
+  <li>it accepts <code>String</code>, <code>Number</code>, <code>Boolean</code> or <code>HTMLElement</code> types of column <strong>values</strong> collection
+    <ul>
+      <li><strong>by default</strong>, the <code>String</code> plain text is retrieved from the <code>&lt;td&gt;</code> cell with the <code>element.textContent</code> <strong>JS DOM method</strong> and set as the <code>match</code> value; eg. <code>&lt;p&gt;Visit our &lt;a href=""&gt;website&lt;/a&gt;.&lt;/p&gt;</code> => <code>"Visit our website."</code>, unless the <strong>column</strong> <a href="config-column-match"><code>match</code></a> property is defined. Then it can return <code>String</code>, <code>Number</code>, <code>Boolean</code> or <code>HTMLElement</code> values</li>
+    </ul>
+  </li>
+  <li>ultimately, for the sorting needs, all values are converted to [String] or [Number] values:
+    <ul>
+      <li>the <code>[Boolean]</code> type value is converted to [String] <code>"true"</code> or <code>"false"</code> for sorting needs</li>
+      <li>the <code>[HTMLElement]</code> type value is converted to [String] representation of this <strong>DOM node</strong> for sorting needs;<br/><em>eg. <code>"&lt;span class='navy'&gt;hello world&lt;/span&gt;"</code></em></li>
+      <li>the <strong>numerical</strong> [String] values that are parse-able to [Number] values <em>(<code>"155"</code>, <code>"-15.5"</code>, etc.)</em>, are converted to [Number] values for sorting needs</li>
+    </ul>
+  </li>
+  <li>if the column <strong>values</strong> collection contain both [String] and [Number] values:
+    <ul>
+      <li>the [Number] values are sorted in <strong>numerical order</strong></li>
+      <li>the [String] values are sorted in <strong>alphabetical order</strong></li>
+      <li>the [Number] values are placed <strong>before</strong> [String] values <em>(in ascending order)</em></li>
+      <li><em>eg. the final order of the sorted values of different types whould look like: <code>10</code>, <code>15</code>, <code>355</code>, <code>63020</code>, <code>&lt;span&gt;Amanda&lt;/span&gt;</code>, <code>&lt;span&gt;Natalie&lt;/span&gt;</code>, <code>1$</code>, <code>111$</code>, <code>2$</code>, <code>222$</code>, <code>Amanda</code>, <code>false</code>, <code>false</code>, <code>Natalie</code>, <code>true</code></em></li>
+    </ul>
+  </li>
+  <li>column <strong>values</strong> can be modified before being sorted by the algorithm, by defining the <strong>column</strong> <a href="config-column-match"><code>match</code></a> property</li>
+</ul>
 
 <h4 id="config-column-match">column <code>match</code> <em>(optional)</em></h4>
 
 <strong>Type:</strong> [ Function | undefined ]<br/>
-<strong>Default:</strong> <code>({ textContent, innerHTML })=&gt; textContent</code><br/>
+<strong>Default:</strong> <code>({ textContent })=&gt; textContent</code><br/>
 <strong>Description:</strong>
 <ul>
   <li>it allows to determine the <strong>match</strong> value for the <a href="#config-column-search"><strong>search</strong><a/> and <a href="#config-column-sortable"><strong>sort</strong></a> action. Thus, the sorting and filtering value can be <strong>different</strong> than the value viewed in the <code>&lt;td&gt;</code> cell.</li>
   <li>The table will be sorted or filtered according to the <strong>match</strong> value rather than the actual <code>&lt;td&gt;</code> content</li>
-  <li>it can be helpful, if the <code>&lt;td&gt;</code> cell contains some HTML elements except for the plain text; eg. the <strong>match</strong> value can indicate <code>"hello world"</code> value, while the actual <code>&lt;td&gt;</code> content is <code>&lt;span class="navy"&gt;hello world&lt;/span&gt;</code></li>
+  <li>it can be helpful, if the <code>&lt;td&gt;</code> cell contains some HTML elements except for the plain text;</li>
+    <ul>
+      <li>eg. the <strong>match</strong> value can indicate <code>"hello world"</code> value, while the actual <code>&lt;td&gt;</code> content is <code>&lt;span class="navy"&gt;hello world&lt;/span&gt;</code></li>
+      <li>eg. the <strong>match</strong> value can indicate [Number] <code>3500</code> value, while the actual <code>&lt;td&gt;</code> content is <code>"$3500"</code> <em>(see how the <a href="#sorting-algorithm">sorting algorithm</a> works)</em></li>
+    </ul>
   <li><strong>by default</strong>, the plain text is retrieved from the <code>&lt;td&gt;</code> cell with the <code>element.textContent</code> <strong>JS DOM method</strong> and set as the <code>match</code> value; eg. <code>&lt;p&gt;Visit our &lt;a href=""&gt;website&lt;/a&gt;.&lt;/p&gt;</code> => <code>"Visit our website."</code></li>
   <li>if the <code>match</code> property is defined with [Function] callback, the <strong>returned value</strong> will be a <strong>match</strong> for sorting and searching</li>
-  <li>the <code>match</code> callback <strong>returned value</strong> must be of <code>String</code>, <code>Number</code>, <code>Boolean</code> or <code>HTMLElement</code> type <a href="#data-type-restrictions">[see above]</a></li>
+  <li>the <code>match</code> callback <strong>returned value</strong> must be of <code>String</code>, <code>Number</code>, <code>Boolean</code> or <code>HTMLElement</code> type <a href="#data-type-restrictions">[see above]</a> <em>(also see how the <a href="#sorting-algorithm">sorting algorithm</a> works for different value types)</em></li>
   <li>The [Function] <code>match</code> callback is called with <strong>the one</strong> [Object] <strong>argument</strong> with the following properties:
     <ul>
       <li><strong><code>textContent</code></strong>: the [String] plain text retrieved from the current cell; eg. <code>"hello world"</code></li>
@@ -518,7 +568,6 @@ This <strong>DOM node</strong> is appended to <strong>each</strong> cell of the 
   <li>eg. <code>match:({ record }) => record.income</code><br/>will sort <em>(or filter)</em> the column according to the chosen values from <a href="#config-data"><code>config.data</code></a> records collection</li>
   <li>eg. <code>match:({ index }) => index</code><br/>will sort <em>(or filter)</em> the column according to the original rows order</li>
 </ul>
-
 
 <h4 id="config-column-casesensitive">column <code>caseSensitive</code> <em>(optional)</em></h4>
 <strong>Type:</strong> [ Boolean | undefined ]<br/>
@@ -712,14 +761,17 @@ The following <code>tablio.dom</code> properties <strong>refer</strong> to the a
   </tr>
 </table>
 
-<h2 id="instance-control"><code>tablio.control</code> [Object]</h2>
+<h2 id="instance-control"><code>tablio.control</code> [Control]</h2>
 
-<p>The [Object] <code>control</code> property contains:
+<p>The [Control] <code>control</code> property contains:
   <ul>
     <li><strong>properties</strong> that allow to get the <strong>current state</strong> of the table</li>
     <li><strong>methods</strong> that allow to <strong>control</strong> the table's <strong>behaviour</strong></li>
   </ul>
 </p>
+
+<h3><code>tablio.control.records</code> <em>(getter)</em></h3>
+<p><strong>Get</strong> the [Array] <strong>records collection</strong> that has been given as <a href="#config-data"><code>config.data</code></a> <em>(or set by default, when not defined)</em>.</p>
 
 <h3><code>tablio.control.currentPage</code> <em>(getter)</em></h3>
 <p><strong>Get</strong> the [Number] <strong>current page number</strong> of the table.</p>
@@ -741,11 +793,11 @@ The following <code>tablio.dom</code> properties <strong>refer</strong> to the a
 
 <p><strong>Get</strong> the [Number] <strong>actual rows number</strong> of the <strong>current page</strong> of the table.</p>
 
-<h3 id="control-rows"><code>tablio.control.rows</code> <em>(getter)</em></h3>
+<h3><code>tablio.control.rows</code> <em>(getter)</em></h3>
 
 <p><strong>Get</strong> the current [Number] <strong>number of rows</strong> that should be <strong>displayed on the page</strong>, according to the <a href="#config-pagerows"><code>config.pageRows</code></a> setting.</p>
 
-<h3><code>tablio.control.rows</code> <em>(setter)</em></h3>
+<h3 id="control-rows"><code>tablio.control.rows</code> <em>(setter)</em></h3>
 
 <ul>
   <li><strong>set</strong> the <strong>number of rows</strong> that should be <strong>displayed on the page</strong></li>

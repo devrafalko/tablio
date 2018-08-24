@@ -5,7 +5,7 @@ module.exports = function(config) {
   config.set({
     basePath: '',
     files: [
-      {pattern: 'src/*.js', watched:false, served:false, included:false, nocache:false},
+      {pattern: 'tests/helpers/*.js',watched:false,served:true,included:true},
       {pattern: 'tests/specs/*.js',watched:false,served:true,included:true}
     ],
     autoWatch: true,
@@ -30,6 +30,7 @@ module.exports = function(config) {
     },
     webpack: webpackConfig,
     preprocessors: {
+      './tests/helpers/*.js': ['webpack'],
       './tests/specs/*.js': ['webpack']
     },
     webpackMiddleware: {

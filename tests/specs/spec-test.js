@@ -1,6 +1,6 @@
-/*global jasmine, DOMCustomMatchers, karmaHTML, describe, beforeAll, expect, it */
+/*global jasmine, DOMCustomMatchers, karmaHTML, xdescribe, beforeAll, expect, it */
 
-describe('The table element',function(){
+xdescribe('The table element',function(){
 
   beforeAll(function(done){
     jasmine.addMatchers(DOMCustomMatchers);

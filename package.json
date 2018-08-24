@@ -48,5 +48,11 @@
     "webpack-cli": "^3.1.0",
     "webpack-karma-jasmine": "^2.0.4",
     "webpack-merge": "^4.1.4"
+  },
+  "dependencies": {
+    "join-array": "^1.1.1",
+    "typeof-arguments": "^4.0.0",
+    "typeof-properties": "^2.0.0",
+    "of-type": "^2.2.0"
   }
 }
